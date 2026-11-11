@@ -102,6 +102,7 @@ export class DatabaseAdapter {
     }
 
     memoryDb.users.set(id, newUser);
+    memoryDb.persist();
     return newUser;
   }
 
@@ -134,6 +135,7 @@ export class DatabaseAdapter {
 
     const updated = { ...existing, ...updates, updated_at: now };
     memoryDb.users.set(id, updated);
+    memoryDb.persist();
     return updated;
   }
 
@@ -429,6 +431,7 @@ export class DatabaseAdapter {
     }
 
     memoryDb.posts.set(id, newPost);
+    memoryDb.persist();
     return newPost;
   }
 
@@ -462,6 +465,7 @@ export class DatabaseAdapter {
     if (!post) return null;
     const updated = { ...post, ...updates, updated_at: now };
     memoryDb.posts.set(id, updated);
+    memoryDb.persist();
     return updated;
   }
 
@@ -471,7 +475,9 @@ export class DatabaseAdapter {
       const res = await pool!.query('DELETE FROM posts WHERE id = $1', [id]);
       return (res.rowCount ?? 0) > 0;
     }
-    return memoryDb.posts.delete(id);
+    const res = memoryDb.posts.delete(id);
+    memoryDb.persist();
+    return res;
   }
 
   // --------------------------------------------------------------------------
@@ -530,6 +536,7 @@ export class DatabaseAdapter {
       post.status = 'flagged';
     }
     memoryDb.posts.set(post.id, post);
+    memoryDb.persist();
 
     return { report: newReport, post };
   }
@@ -620,6 +627,7 @@ export class DatabaseAdapter {
         report.resolved_at = now;
       }
     }
+    memoryDb.persist();
 
     return { post, actionLog };
   }

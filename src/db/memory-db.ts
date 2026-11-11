@@ -1,4 +1,7 @@
 import { randomUUID } from 'crypto';
+import os from 'os';
+import path from 'path';
+import fs from 'fs';
 import { User, Category, Post, PostReport, ModerationAction, Notification, OtpRecord } from './schema';
 import { POST_CATEGORIES } from '../config/constants';
 
@@ -18,6 +21,53 @@ export class MemoryDatabase {
   constructor() {
     this.initDefaultCategories();
     this.seedInitialData();
+    this.loadFromDisk();
+  }
+
+  private getStoreFilePath(): string {
+    return path.join(os.tmpdir(), 'bharat_local_store.json');
+  }
+
+  public persist() {
+    try {
+      const data = {
+        users: Array.from(this.users.entries()),
+        posts: Array.from(this.posts.entries()),
+        reports: Array.from(this.reports.entries()),
+        notifications: Array.from(this.notifications.entries()),
+        moderationActions: this.moderationActions
+      };
+      fs.writeFileSync(this.getStoreFilePath(), JSON.stringify(data), 'utf-8');
+    } catch (e) {
+      // Non-blocking
+    }
+  }
+
+  public loadFromDisk() {
+    try {
+      const p = this.getStoreFilePath();
+      if (fs.existsSync(p)) {
+        const raw = fs.readFileSync(p, 'utf-8');
+        const parsed = JSON.parse(raw);
+        if (parsed.users) {
+          for (const [k, v] of parsed.users) this.users.set(k, v);
+        }
+        if (parsed.posts) {
+          for (const [k, v] of parsed.posts) this.posts.set(k, v);
+        }
+        if (parsed.reports) {
+          for (const [k, v] of parsed.reports) this.reports.set(k, v);
+        }
+        if (parsed.notifications) {
+          for (const [k, v] of parsed.notifications) this.notifications.set(k, v);
+        }
+        if (parsed.moderationActions) {
+          this.moderationActions = parsed.moderationActions;
+        }
+      }
+    } catch (e) {
+      // Non-blocking fallback
+    }
   }
 
   private initDefaultCategories() {
