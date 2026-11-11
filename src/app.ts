@@ -58,9 +58,14 @@ export function createApp(): Express {
   app.use('/api', apiRateLimiter);
 
   // Serve static assets for Web UI
-  const publicPath = fs.existsSync(path.join(__dirname, 'public'))
-    ? path.join(__dirname, 'public')
-    : path.join(__dirname, '../src/public');
+  const possiblePaths = [
+    path.join(__dirname, 'public'),
+    path.join(__dirname, '../src/public'),
+    path.join(process.cwd(), 'src/public'),
+    path.join(process.cwd(), 'public'),
+    path.join(process.cwd(), 'dist/public')
+  ];
+  const publicPath = possiblePaths.find((p) => fs.existsSync(p)) || path.join(__dirname, 'public');
   app.use(express.static(publicPath));
 
   // Swagger Documentation

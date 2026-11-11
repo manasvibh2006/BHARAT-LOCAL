@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bharat Local | भारत लोकल - Multilingual Hyperlocal Community</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <!-- Header Bar -->
+  <header class="app-header">
+    <div class="header-container">
+      <div class="brand">
+        <div class="logo-symbol">🇮🇳</div>
+        <div class="brand-text">
+          <h1>Bharat Local <span class="hindi-subtitle">भारत लोकल</span></h1>
+          <p class="tagline">Hyperlocal Multilingual Community Network & Moderation Hub</p>
+        </div>
+      </div>
+
+      <div class="header-controls">
+        <!-- City Selector / Freeform Input -->
+        <div class="control-group city-input-group">
+          <label for="cityInput">📍 Location / शहर:</label>
+          <div class="city-input-wrapper">
+            <input type="text" id="cityInput" list="popularCities" placeholder="Type or select city (e.g. Pune, Jaipur, Bengaluru)..." class="styled-input-city" value="Jaipur">
+            <datalist id="popularCities">
+              <option value="Jaipur">Jaipur (जयपुर)</option>
+              <option value="Bengaluru">Bengaluru (ಬೆಂಗಳೂರು)</option>
+              <option value="Chennai">Chennai (சென்னை)</option>
+              <option value="Mumbai">Mumbai (मुंबई)</option>
+              <option value="Delhi">Delhi (दिल्ली)</option>
+              <option value="Pune">Pune (पुणे)</option>
+              <option value="Hyderabad">Hyderabad (హైదరాబాద్)</option>
+              <option value="Kolkata">Kolkata (কলকাতা)</option>
+              <option value="Ahmedabad">Ahmedabad (અમદાવાદ)</option>
+              <option value="Lucknow">Lucknow (लखनऊ)</option>
+              <option value="Chandigarh">Chandigarh (चंडीगढ़)</option>
+              <option value="Patna">Patna (पटना)</option>
+              <option value="Bhopal">Bhopal (भोपाल)</option>
+              <option value="Kochi">Kochi (കൊച്ചി)</option>
+            </datalist>
+            <button id="applyCityBtn" class="btn btn-sm btn-primary">Go</button>
+          </div>
+        </div>
+
+        <!-- Preferred Language Selector -->
+        <div class="control-group">
+          <label for="langSelect">🗣️ Language / भाषा:</label>
+          <select id="langSelect" class="styled-select">
+            <option value="all">All Languages (सभी)</option>
+            <option value="hi" selected>हिन्दी (Hindi)</option>
+            <option value="en">English</option>
+            <option value="ta">தமிழ் (Tamil)</option>
+            <option value="kn">ಕನ್ನಡ (Kannada)</option>
+            <option value="te">తెలుగు (Telugu)</option>
+            <option value="mr">मराठी (Marathi)</option>
+            <option value="bn">বাংলা (Bengali)</option>
+            <option value="gu">ગુજરાતી (Gujarati)</option>
+            <option value="ml">മലയാളം (Malayalam)</option>
+            <option value="pa">ਪੰਜਾਬੀ (Punjabi)</option>
+          </select>
+        </div>
+
+        <!-- Persona / Auth Pill -->
+        <div class="user-persona-pill" id="userPill">
+          <span class="user-avatar" id="userAvatar">👤</span>
+          <div class="user-details">
+            <span class="user-name" id="userName">Sunita Meena</span>
+            <span class="user-role-badge role-user" id="userRoleBadge">User</span>
+          </div>
+          <button id="switchUserBtn" class="btn btn-sm btn-outline">Account / Login</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- System Health & Cache Banner -->
+  <div class="system-status-bar">
+    <div class="status-inner">
+      <div class="status-item">
+        <span class="status-dot healthy"></span>
+        <span class="status-label">Database:</span>
+        <strong id="dbStatusText">PostgreSQL (Indexed)</strong>
+      </div>
+      <div class="status-item">
+        <span class="status-dot cached"></span>
+        <span class="status-label">Cache Engine:</span>
+        <strong id="cacheStatusText">Redis LRU</strong>
+      </div>
+      <div class="status-item">
+        <span class="status-dot queue"></span>
+        <span class="status-label">Background Queue:</span>
+        <strong id="queueStatusText">Active (0 pending)</strong>
+      </div>
+      <div class="status-item links">
+        <a href="/api/docs" target="_blank" class="docs-link">📑 Interactive Swagger Docs</a>
+        <a href="/health" target="_blank" class="health-link">⚡ Healthcheck JSON</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Container -->
+  <main class="main-container">
+    <!-- Navigation Tabs -->
+    <nav class="nav-tabs">
+      <button class="tab-btn active" data-tab="feedTab">📰 Community Feed</button>
+      <button class="tab-btn" data-tab="createTab">✍️ Share Local Post</button>
+      <button class="tab-btn" data-tab="profileTab">👤 My Profile & Preferences</button>
+      <button class="tab-btn" data-tab="moderationTab" id="modTabBtn">🛡️ Moderation Desk <span class="badge" id="reportCountBadge">0</span></button>
+      <button class="tab-btn" data-tab="notificationsTab">🔔 Notifications <span class="badge badge-accent" id="notifBadge">0</span></button>
+      <button class="tab-btn" data-tab="queueTab">⚡ Async Worker Logs</button>
+    </nav>
+
+    <!-- TAB 1: FEED -->
+    <section id="feedTab" class="tab-content active">
+      <div class="feed-header-bar">
+        <!-- Search bar -->
+        <div class="search-box">
+          <input type="text" id="searchInput" placeholder="Search posts, services, alerts, localities (e.g. Indiranagar, पानी, tuition, camp)...">
+          <button id="searchBtn" class="btn btn-primary">Search</button>
+          <button id="resetSearchBtn" class="btn btn-ghost" style="display:none;">Clear</button>
+        </div>
+
+        <div class="feed-sort-wrap">
+          <label>Sort by:</label>
+          <select id="sortSelect" class="styled-select-sm">
+            <option value="latest">Latest First</option>
+            <option value="popular">Most Viewed</option>
+            <option value="oldest">Oldest</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Category Filter Pills -->
+      <div class="category-pills" id="categoryPills">
+        <button class="pill active" data-category="all">🌟 All Categories</button>
+        <button class="pill" data-category="announcements">📢 Announcements</button>
+        <button class="pill" data-category="services">🛠️ Services</button>
+        <button class="pill" data-category="emergency">🚨 Emergency</button>
+        <button class="pill" data-category="buy_sell">🏷️ Buy / Sell</button>
+        <button class="pill" data-category="help_wanted">💼 Help Wanted</button>
+        <button class="pill" data-category="events">🎪 Events</button>
+        <button class="pill" data-category="lost_found">🔍 Lost & Found</button>
+      </div>
+
+      <!-- Feed Cache Notice -->
+      <div id="cacheNotice" class="cache-indicator-banner">
+        <span>⚡ Served via Redis Cache</span>
+      </div>
+
+      <!-- Feed Posts Grid -->
+      <div class="posts-grid" id="postsContainer">
+        <div class="loading-state">Loading local community posts...</div>
+      </div>
+
+      <!-- Pagination -->
+      <div class="pagination-bar" id="paginationBar">
+        <button id="prevPageBtn" class="btn btn-outline" disabled>← Previous</button>
+        <span id="pageInfoText">Page 1 of 1</span>
+        <button id="nextPageBtn" class="btn btn-outline" disabled>Next →</button>
+      </div>
+    </section>
+
+    <!-- TAB 2: CREATE POST -->
+    <section id="createTab" class="tab-content">
+      <div class="form-card">
+        <h2>✍️ Create Local Community Post</h2>
+        <p class="subtitle">Publish your announcement, service, job, or event in any city across Bharat.</p>
+
+        <form id="createPostForm">
+          <div class="form-row">
+            <div class="form-group flex-2">
+              <label for="postTitle">Post Title / शीर्षक *</label>
+              <input type="text" id="postTitle" required minlength="5" placeholder="e.g. Free Eye Checkup Camp / Plumbing Services in Kothrud">
+            </div>
+            <div class="form-group flex-1">
+              <label for="postCategory">Category / श्रेणी *</label>
+              <select id="postCategory" required class="styled-select">
+                <option value="announcements">📢 Announcements & Alerts</option>
+                <option value="services">🛠️ Local Services & Utilities</option>
+                <option value="emergency">🚨 Emergency & Urgent Aid</option>
+                <option value="help_wanted">💼 Help Wanted & Jobs</option>
+                <option value="buy_sell">🏷️ Buy, Sell & Rent</option>
+                <option value="events">🎪 Community Events</option>
+                <option value="lost_found">🔍 Lost & Found</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group flex-1">
+              <label for="postLanguage">Language / भाषा *</label>
+              <select id="postLanguage" class="styled-select">
+                <option value="hi">हिन्दी (Hindi)</option>
+                <option value="en">English</option>
+                <option value="ta">தமிழ் (Tamil)</option>
+                <option value="kn">ಕನ್ನಡ (Kannada)</option>
+                <option value="te">తెలుగు (Telugu)</option>
+                <option value="mr">मराठी (Marathi)</option>
+                <option value="bn">বাংলা (Bengali)</option>
+                <option value="gu">ગુજરાતી (Gujarati)</option>
+                <option value="ml">മലയാളം (Malayalam)</option>
+                <option value="pa">ਪੰਜਾਬੀ (Punjabi)</option>
+              </select>
+            </div>
+            <div class="form-group flex-1">
+              <label for="postState">State / राज्य *</label>
+              <input type="text" id="postState" required placeholder="e.g. Maharashtra, Rajasthan, Karnataka">
+            </div>
+            <div class="form-group flex-1">
+              <label for="postCity">City / शहर *</label>
+              <input type="text" id="postCity" required placeholder="e.g. Pune, Jaipur, Bengaluru">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group flex-2">
+              <label for="postLocality">Locality / Area / वॉर्ड *</label>
+              <input type="text" id="postLocality" required placeholder="e.g. Kothrud, Indiranagar, C-Scheme">
+            </div>
+            <div class="form-group flex-1">
+              <label for="postPincode">Pincode (6 digits) *</label>
+              <input type="text" id="postPincode" required pattern="^[1-9][0-9]{5}$" placeholder="e.g. 411038">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="postContent">Description / विवरण *</label>
+            <textarea id="postContent" required minlength="10" rows="5" placeholder="Provide complete details, timings, landmarks, charges (if any), and guidelines..."></textarea>
+          </div>
+
+          <div class="form-group">
+            <label for="postContact">Contact Information / संपर्क (Phone, WhatsApp, or address)</label>
+            <input type="text" id="postContact" placeholder="e.g. +919876543210 (Mon-Sat 10 AM to 6 PM)">
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary btn-lg" id="submitPostBtn">Publish Community Post 🚀</button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <!-- TAB 3: USER PROFILE & PREFERENCES -->
+    <section id="profileTab" class="tab-content">
+      <div class="form-card">
+        <h2>👤 My Profile & Location Preferences</h2>
+        <p class="subtitle">Customize your native language and home locality to automatically tailor your hyperlocal community feed.</p>
+
+        <form id="profileForm">
+          <div class="form-row">
+            <div class="form-group flex-1">
+              <label for="profilePhone">Phone Number / मोबाइल नंबर</label>
+              <input type="text" id="profilePhone" disabled class="input-disabled">
+            </div>
+            <div class="form-group flex-1">
+              <label for="profileRole">Role / भूमिका</label>
+              <input type="text" id="profileRole" disabled class="input-disabled">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group flex-2">
+              <label for="profileName">Full Name / पूरा नाम *</label>
+              <input type="text" id="profileName" required placeholder="Enter your full name">
+            </div>
+            <div class="form-group flex-1">
+              <label for="profileLanguage">Preferred Language / पसंदीदा भाषा *</label>
+              <select id="profileLanguage" class="styled-select">
+                <option value="hi">हिन्दी (Hindi)</option>
+                <option value="en">English</option>
+                <option value="ta">தமிழ் (Tamil)</option>
+                <option value="kn">ಕನ್ನಡ (Kannada)</option>
+                <option value="te">తెలుగు (Telugu)</option>
+                <option value="mr">मराठी (Marathi)</option>
+                <option value="bn">বাংলা (Bengali)</option>
+                <option value="gu">ગુજરાતી (Gujarati)</option>
+                <option value="ml">മലയാളം (Malayalam)</option>
+                <option value="pa">ਪੰਜਾਬੀ (Punjabi)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group flex-1">
+              <label for="profileState">State / राज्य *</label>
+              <input type="text" id="profileState" required placeholder="e.g. Maharashtra">
+            </div>
+            <div class="form-group flex-1">
+              <label for="profileCity">City / शहर *</label>
+              <input type="text" id="profileCity" required placeholder="e.g. Pune">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group flex-2">
+              <label for="profileLocality">Locality / एरिया *</label>
+              <input type="text" id="profileLocality" placeholder="e.g. Kothrud">
+            </div>
+            <div class="form-group flex-1">
+              <label for="profilePincode">Pincode (6 digits) *</label>
+              <input type="text" id="profilePincode" required pattern="^[1-9][0-9]{5}$" placeholder="e.g. 411038">
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary btn-lg" id="saveProfileBtn">Save Preferences 💾</button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <!-- TAB 4: MODERATION DESK -->
+    <section id="moderationTab" class="tab-content">
+      <div class="mod-card">
+        <div class="mod-header">
+          <div>
+            <h2>🛡️ Community Moderation Desk</h2>
+            <p class="subtitle">Review reported posts, resolve community flags, and maintain platform safety.</p>
+          </div>
+          <div class="mod-actions">
+            <button id="broadcastAlertBtn" class="btn btn-warning">📢 Broadcast District Alert</button>
+            <button id="refreshModQueueBtn" class="btn btn-outline">🔄 Refresh Queue</button>
+          </div>
+        </div>
+
+        <div id="modQueueContainer" class="mod-queue-list">
+          <div class="loading-state">Loading moderation queue...</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 5: NOTIFICATIONS -->
+    <section id="notificationsTab" class="tab-content">
+      <div class="notif-card">
+        <h2>🔔 My Notifications & Alerts</h2>
+        <p class="subtitle">Real-time status updates delivered asynchronously by the background worker.</p>
+        <div id="notifListContainer" class="notif-list">
+          <div class="loading-state">Loading notifications...</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 6: ASYNC WORKER LOGS -->
+    <section id="queueTab" class="tab-content">
+      <div class="queue-card">
+        <div class="queue-header">
+          <h2>⚡ Asynchronous Background Notification Worker</h2>
+          <button id="refreshQueueBtn" class="btn btn-outline btn-sm">Refresh Stats</button>
+        </div>
+        <p class="subtitle">Visualizing background worker execution for post reports, approvals, and emergency alerts.</p>
+        
+        <div class="queue-stats-grid" id="queueStatsGrid">
+          <div class="stat-box">
+            <span class="stat-number" id="statEnqueued">0</span>
+            <span class="stat-label">Total Jobs Enqueued</span>
+          </div>
+          <div class="stat-box">
+            <span class="stat-number" id="statCompleted">0</span>
+            <span class="stat-label">Successfully Processed</span>
+          </div>
+          <div class="stat-box">
+            <span class="stat-number" id="statPending">0</span>
+            <span class="stat-label">Pending in Queue</span>
+          </div>
+        </div>
+
+        <h3>Recent Worker Jobs Executed</h3>
+        <div id="workerJobsList" class="worker-jobs-list">
+          <div class="empty-state">No jobs executed yet. Trigger a report or approve a post to watch the worker in action!</div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- MODAL: PERSONA SWITCHER / OTP LOGIN -->
+  <div class="modal-overlay" id="personaModal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3>Login / Register with User Input</h3>
+        <button class="modal-close" id="closeModalBtn">&times;</button>
+      </div>
+      <div class="modal-body">
+        <!-- Dual Mode Navigation -->
+        <div class="modal-nav-pills">
+          <button class="modal-pill-btn active" id="pillCustomLogin">📱 Phone OTP (User Input)</button>
+          <button class="modal-pill-btn" id="pillDemoPersonas">🎭 Pre-set Demo Personas</button>
+        </div>
+
+        <!-- Section 1: User Input Phone OTP -->
+        <div id="sectionCustomLogin">
+          <p class="helper-text">Enter your phone number to receive an OTP and register or log in with your custom details:</p>
+          
+          <form id="otpLoginForm">
+            <div class="form-group">
+              <label for="loginPhoneInput">Indian Mobile Number / फोन नंबर *</label>
+              <div class="form-row">
+                <input type="text" id="loginPhoneInput" placeholder="+919876543210 or 9876543210" required class="input-flex" value="+919876543210">
+                <button type="button" id="requestOtpBtn" class="btn btn-outline">Request OTP</button>
+              </div>
+              <small class="helper-subtext">Dev mock OTP is <strong>123456</strong>.</small>
+            </div>
+
+            <div id="otpInputWrap" style="display:none; border-top:1px solid #e2e8f0; padding-top:14px; margin-top:10px;">
+              <div class="form-group">
+                <label for="loginOtpInput">6-Digit Verification OTP *</label>
+                <input type="text" id="loginOtpInput" placeholder="Enter 6-digit OTP (123456)" required maxlength="6" value="123456">
+              </div>
+
+              <div class="form-row">
+                <div class="form-group flex-1">
+                  <label for="regName">Your Name / आपका नाम *</label>
+                  <input type="text" id="regName" placeholder="e.g. Rahul Sharma" value="Rahul Sharma">
+                </div>
+                <div class="form-group flex-1">
+                  <label for="regLang">Preferred Language *</label>
+                  <select id="regLang" class="styled-select">
+                    <option value="hi" selected>हिन्दी (Hindi)</option>
+                    <option value="en">English</option>
+                    <option value="ta">தமிழ் (Tamil)</option>
+                    <option value="kn">ಕನ್ನಡ (Kannada)</option>
+                    <option value="mr">मराठी (Marathi)</option>
+                    <option value="te">తెలుగు (Telugu)</option>
+                    <option value="bn">বাংলা (Bengali)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group flex-1">
+                  <label for="regCity">City / शहर *</label>
+                  <input type="text" id="regCity" placeholder="e.g. Pune" value="Pune">
+                </div>
+                <div class="form-group flex-1">
+                  <label for="regPincode">Pincode (6 digits) *</label>
+                  <input type="text" id="regPincode" placeholder="e.g. 411038" pattern="^[1-9][0-9]{5}$" value="411038">
+                </div>
+              </div>
+
+              <button type="button" id="verifyOtpBtn" class="btn btn-primary btn-lg" style="width:100%; margin-top:10px;">Verify OTP & Sign In 🚀</button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Section 2: Demo Personas -->
+        <div id="sectionDemoPersonas" style="display:none;">
+          <p class="helper-text">Select a pre-configured role persona to test Moderator or District Admin capabilities:</p>
+          <div class="personas-grid" id="personasGrid">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: REPORT POST -->
+  <div class="modal-overlay" id="reportModal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3>🚨 Report Inappropriate Post</h3>
+        <button class="modal-close" id="closeReportModalBtn">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p class="helper-text">Help us keep Bharat Local trustworthy and safe. Please specify the reason:</p>
+        <form id="reportForm">
+          <input type="hidden" id="reportPostId">
+          <div class="form-group">
+            <label for="reportReason">Reason / कारण *</label>
+            <select id="reportReason" class="styled-select" required>
+              <option value="spam">Spam / Unsolicited Promotion</option>
+              <option value="fraud">Fraud / Scam / Fake Service</option>
+              <option value="misinformation">Misinformation / False Claim</option>
+              <option value="hate_speech">Hate Speech / Abusive Content</option>
+              <option value="inappropriate">Inappropriate / Obscene</option>
+              <option value="other">Other Violation</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="reportDetails">Additional Details (Optional)</label>
+            <textarea id="reportDetails" rows="3" placeholder="Provide extra context to help community moderators..."></textarea>
+          </div>
+          <div class="form-actions">
+            <button type="submit" class="btn btn-danger">Submit Report to Queue</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: BROADCAST ALERT -->
+  <div class="modal-overlay" id="broadcastModal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3>📢 Broadcast District Emergency Alert</h3>
+        <button class="modal-close" id="closeBroadcastModalBtn">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p class="helper-text">Broadcast a high-priority public advisory or emergency notice across the district:</p>
+        <form id="broadcastForm">
+          <div class="form-group">
+            <label for="alertTitle">Alert Title / शीर्षक *</label>
+            <input type="text" id="alertTitle" required placeholder="e.g. Flash Flood Advisory / Water Pipeline Repair">
+          </div>
+          <div class="form-row">
+            <div class="form-group flex-1">
+              <label for="alertCity">District / City *</label>
+              <input type="text" id="alertCity" required placeholder="e.g. Pune, Jaipur">
+            </div>
+            <div class="form-group flex-1">
+              <label for="alertLevel">Severity Level *</label>
+              <select id="alertLevel" class="styled-select">
+                <option value="info">ℹ️ Informational Notice</option>
+                <option value="warning" selected>⚠️ Warning / Alert</option>
+                <option value="emergency">🚨 Emergency / Urgent</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="alertMessage">Detailed Advisory Message *</label>
+            <textarea id="alertMessage" required rows="4" placeholder="Provide complete emergency guidelines, affected wards, and helpline contacts..."></textarea>
+          </div>
+          <div class="form-actions">
+            <button type="submit" class="btn btn-warning btn-lg">Enqueue District Broadcast 📢</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
